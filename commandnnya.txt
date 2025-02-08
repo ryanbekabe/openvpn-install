@@ -1,0 +1,22 @@
+08:34:12 22/01/2025
+https://github.com/Nyr/openvpn-install
+openssl x509 -in /etc/openvpn/easy-rsa/pki/issued/dell2025.crt -noout -subject
+
+iptables -t nat -L PREROUTING -n --line-numbers
+iptables -t nat -D PREROUTING 1
+
+/etc/sysctl.conf
+net.ipv4.ip_forward=1
+sysctl -p
+# Forward trafik ke Windows 1
+iptables -t nat -A PREROUTING -p tcp --dport 83 -j DNAT --to-destination 10.8.0.2:80
+iptables -t nat -A PREROUTING -p tcp --dport 8080 -j DNAT --to-destination 10.8.0.2:8080
+iptables -t nat -A POSTROUTING -p tcp -d 10.8.0.2 --dport 8080 -j MASQUERADE
+iptables -t nat -A PREROUTING -p tcp --dport 3307 -j DNAT --to-destination 10.8.0.2:3306
+
+# Forward trafik ke Windows 2
+iptables -t nat -A PREROUTING -p tcp --dport 9090 -j DNAT --to-destination 10.8.0.3:9090
+iptables -t nat -A POSTROUTING -p tcp -d 10.8.0.3 --dport 9090 -j MASQUERADE
+
+iptables -t nat -A PREROUTING -d 36.92.217.140 -p tcp --dport 81 -j DNAT --to-destination 10.8.0.2:80
+36.92.217.140:81
